@@ -1,42 +1,74 @@
--- ==========================================
---  Script: V1__create_user_structure.sql
---  Objetivo: Estrutura inicial de usuários e perfis
--- ==========================================
+-- =========================================================
+-- Flyway Migration: V1__create_user_structure.sql
+-- Estrutura inicial de usuários, perfis e permissões
+-- =========================================================
 
-CREATE TABLE IF NOT EXISTS perfil (
+-- =============== TABLE: permission =======================
+CREATE TABLE IF NOT EXISTS permission (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    descricao VARCHAR(255),
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    name VARCHAR(100) NOT NULL UNIQUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS permissao (
+-- =============== TABLE: profile ==========================
+CREATE TABLE IF NOT EXISTS profile (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    descricao VARCHAR(255),
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    name VARCHAR(100) NOT NULL UNIQUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS perfil_permissao (
-    perfil_id BIGINT NOT NULL,
-    permissao_id BIGINT NOT NULL,
-    PRIMARY KEY (perfil_id, permissao_id),
-    CONSTRAINT fk_perfil_permissao_perfil FOREIGN KEY (perfil_id) REFERENCES perfil(id) ON DELETE CASCADE,
-    CONSTRAINT fk_perfil_permissao_permissao FOREIGN KEY (permissao_id) REFERENCES permissao(id) ON DELETE CASCADE
-);
+-- =============== TABLE: profile_permission ===============
+CREATE TABLE IF NOT EXISTS profile_permission (
+    profile_id BIGINT NOT NULL,
+    permission_id BIGINT NOT NULL,
+    PRIMARY KEY (profile_id, permission_id),
+    CONSTRAINT fk_profile_permission_profile FOREIGN KEY (profile_id) REFERENCES profile(id) ON DELETE CASCADE,
+    CONSTRAINT fk_profile_permission_permission FOREIGN KEY (permission_id) REFERENCES permission(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS usuario (
+-- =============== TABLE: user =============================
+CREATE TABLE IF NOT EXISTS user (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(150) NOT NULL,
+    name VARCHAR(150),
     email VARCHAR(150) NOT NULL UNIQUE,
-    cognito_sub VARCHAR(255), -- ID do usuário no Cognito
+    position VARCHAR(100),
+    active BOOLEAN DEFAULT TRUE,
+    type VARCHAR(50) DEFAULT 'HUMANO',
+    cognito_user_id VARCHAR(255),
     perfil_id BIGINT,
-    ativo BOOLEAN DEFAULT TRUE,
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_usuario_perfil FOREIGN KEY (perfil_id) REFERENCES perfil(id)
-);
+    date_register DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_profile FOREIGN KEY (perfil_id) REFERENCES profile(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Índices adicionais
-CREATE INDEX idx_usuario_email ON usuario(email);
-CREATE INDEX idx_perfil_nome ON perfil(nome);
-CREATE INDEX idx_permissao_nome ON permissao(nome);
+-- =========================================================
+-- Inserção de dados iniciais de perfil e permissões
+-- =========================================================
+
+-- Perfis base
+INSERT INTO profile (name) VALUES ('Administrator'), ('Manager'), ('Technician');
+
+-- Permissões base
+INSERT INTO permission (name) VALUES
+('USER_CREATE'),
+('USER_VIEW'),
+('USER_EDIT'),
+('USER_DELETE'),
+('EQUIPMENT_VIEW'),
+('EQUIPMENT_EDIT'),
+('MAINTENANCE_VIEW'),
+('MAINTENANCE_EDIT');
+
+-- Associação de permissões aos perfis
+-- Administrator: todas as permissões
+INSERT INTO profile_permission (profile_id, permission_id)
+SELECT 1, p.id FROM permission p;
+
+-- Manager: apenas visualizar e editar equipamentos e manutenção
+INSERT INTO profile_permission (profile_id, permission_id)
+SELECT 2, p.id FROM permission p WHERE p.name IN ('EQUIPMENT_VIEW', 'EQUIPMENT_EDIT', 'MAINTENANCE_VIEW', 'MAINTENANCE_EDIT');
+
+-- Technician: somente visualizar manutenção
+INSERT INTO profile_permission (profile_id, permission_id)
+SELECT 3, p.id FROM permission p WHERE p.name IN ('MAINTENANCE_VIEW');
+
+-- =========================================================
+-- Final da migração
+-- =========================================================

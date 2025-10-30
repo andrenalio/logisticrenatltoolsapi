@@ -34,12 +34,14 @@ public class User {
 	    @Enumerated(EnumType.STRING)
 	    private UserType type = UserType.HUMANO;
 
+	    @Column(name="cognito_user_id")
 	    private String cognitoUserId; // ID do usuário no Cognito
 
 	    @ManyToOne(fetch = FetchType.LAZY)
 	    @JoinColumn(name = "perfil_id")
 	    private Profile profile;
-
+	    
+	    @Column(name="date_register")
 	    private LocalDateTime dateRegister = LocalDateTime.now();
 
 		public Long getId() {
