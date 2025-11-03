@@ -60,36 +60,45 @@ public class CognitoAuthService {
 		return challengeResult.getAuthenticationResult();
 	}
 
-//	public void forgotPassword(String email) {
-//		try {
-//			ForgotPasswordRequest request = ForgotPasswordRequest.builder()
-//					.clientId(clientId)
-//					.username(email)
-//					.build();
-//
-//			cognitoClient.forgotPassword(request);
-//
-//		} catch (UserNotFoundException e) {
-//			throw new RuntimeException("User not found in Cognito");
-//		} catch (InvalidParameterException e) {
-//			throw new RuntimeException("Invalid request parameters");
-//		} catch (CognitoIdentityProviderException e) {
-//			throw new RuntimeException("Error contacting Cognito: " + e.awsErrorDetails().errorMessage());
-//		}
-//	}
-//
-//
-//	public void confirmForgotPassword(String email, String confirmationCode, String newPassword) {
-//		ConfirmForgotPasswordRequest request = ConfirmForgotPasswordRequest.builder()
-//				.clientId(clientId)
-//				.username(email)
-//				.confirmationCode(confirmationCode)
-//				.password(newPassword)
-//				.build();
-//
-//		cognitoClient.confirmForgotPassword(request);
-//	}
 
+	public void forgotPassword(String email) {
+        try {
+            ForgotPasswordRequest request = new ForgotPasswordRequest()
+                    .withClientId(clientId)
+                    .withSecretHash(CognitoSecretHashUtil.calculateSecretHash(email, clientId, clientSecret))
+                    .withUsername(email);
+            cognitoClient.forgotPassword(request);
+
+        } catch (UserNotFoundException e) {
+            throw new RuntimeException("Usuário não encontrado no Cognito");
+        } catch (InvalidParameterException e) {
+            throw new RuntimeException("Parâmetros inválidos");
+        } catch (AWSCognitoIdentityProviderException e) {
+            throw new RuntimeException("Erro ao contatar o Cognito: " + e.getErrorMessage());
+        }
+    }
+
+	 public void confirmForgotPassword(String email, String confirmationCode, String newPassword) {
+	        try {
+	            ConfirmForgotPasswordRequest request = new ConfirmForgotPasswordRequest()
+	                    .withClientId(clientId)
+	                    .withUsername(email)
+	                    .withSecretHash(CognitoSecretHashUtil.calculateSecretHash(email, clientId, clientSecret))
+	                    .withConfirmationCode(confirmationCode)
+	                    .withPassword(newPassword);
+
+	            cognitoClient.confirmForgotPassword(request);
+
+	        } catch (ExpiredCodeException e) {
+	            throw new RuntimeException("O código de verificação expirou");
+	        } catch (CodeMismatchException e) {
+	            throw new RuntimeException("Código de verificação inválido");
+	        } catch (UserNotFoundException e) {
+	            throw new RuntimeException("Usuário não encontrado no Cognito");
+	        } catch (AWSCognitoIdentityProviderException e) {
+	            throw new RuntimeException("Erro ao contatar o Cognito: " + e.getErrorMessage());
+	        }
+	    }
 	/**
 	 * Optional: administratively sign-out user from all devices/sessions
 	 */

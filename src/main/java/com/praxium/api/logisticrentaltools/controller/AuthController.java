@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.praxium.api.logisticrentaltools.dto.ConfirmForgotPasswordRequestDTO;
+import com.praxium.api.logisticrentaltools.dto.ForgotPasswordRequestDTO;
 import com.praxium.api.logisticrentaltools.service.CognitoAuthService;
 import com.praxium.api.logisticrentaltools.service.UserService;
 import com.amazonaws.services.cognitoidp.model.AuthenticationResultType;
@@ -87,6 +89,22 @@ public class AuthController {
 			return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
 		}
 	}
+	
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequestDTO request) {
+    	cognitoAuthService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok("Código de redefinição de senha enviado para o e-mail.");
+    }
+    
+    @PostMapping("/confirm-forgot-password")
+    public ResponseEntity<?> confirmForgotPassword(@RequestBody ConfirmForgotPasswordRequestDTO request) {
+    	cognitoAuthService.confirmForgotPassword(
+                request.getEmail(),
+                request.getConfirmationCode(),
+                request.getNewPassword()
+        );
+        return ResponseEntity.ok("Senha redefinida com sucesso.");
+    }
 
 	// Optional: backend logout using adminGlobalSignOut
 	@PostMapping("/logout")
