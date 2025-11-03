@@ -42,10 +42,11 @@ public class CognitoUserService {
 				.withUserAttributes(
 						new AttributeType().withName("email").withValue(email),
 						new AttributeType().withName("name").withValue(nome),
-						new AttributeType().withName("email_verified").withValue("false")
+						new AttributeType().withName("email_verified").withValue("true")
 						)
 				.withDesiredDeliveryMediums(DeliveryMediumType.EMAIL)
 				.withTemporaryPassword(TEMP_PASSWORD);
+		
 		return cognitoClient.adminCreateUser(request);
 	}
 

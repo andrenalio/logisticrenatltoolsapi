@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS user (
     cognito_user_id VARCHAR(255),
     perfil_id BIGINT,
     date_register DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_login DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user_profile FOREIGN KEY (perfil_id) REFERENCES profile(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

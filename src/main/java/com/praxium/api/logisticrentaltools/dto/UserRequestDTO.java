@@ -9,6 +9,7 @@ public class UserRequestDTO {
 	    private String email;
 	    private String position;
 	    private Long profileId;
+	    private Boolean active;
 	    
 		public String getName() {
 			return name;
@@ -33,5 +34,11 @@ public class UserRequestDTO {
 		}
 		public void setProfileId(Long profileId) {
 			this.profileId = profileId;
+		}
+		public Boolean getActive() {
+			return active;
+		}
+		public void setActive(Boolean active) {
+			this.active = active;
 		}
 }

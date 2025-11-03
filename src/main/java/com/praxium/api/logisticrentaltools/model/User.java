@@ -43,6 +43,9 @@ public class User {
 	    
 	    @Column(name="date_register")
 	    private LocalDateTime dateRegister = LocalDateTime.now();
+	    
+	    @Column(name="last_login")
+	    private LocalDateTime lastLogin;
 
 		public Long getId() {
 			return id;
@@ -116,6 +119,14 @@ public class User {
 		public void setProfile(Profile profile) {
 			this.profile = profile;
 		}
-	    
+
+		public LocalDateTime getLastLogin() {
+			return lastLogin;
+		}
+
+		public void setLastLogin(LocalDateTime lastLogin) {
+			this.lastLogin = lastLogin;
+		}
+
 	    
 }
