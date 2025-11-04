@@ -92,6 +92,9 @@ public class AuthController {
 	
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequestDTO request) {
+    	if(userService.findByEmail(request.getEmail()) == null){
+    		return ResponseEntity.badRequest().body(Map.of("error", "E-mail not register ")); 
+    	}
     	cognitoAuthService.forgotPassword(request.getEmail());
         return ResponseEntity.ok("Código de redefinição de senha enviado para o e-mail.");
     }
